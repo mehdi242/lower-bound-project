@@ -1,0 +1,343 @@
+\RequirePackage{xargs}
+\RequirePackage{xargs}
+\RequirePackage{array}
+\RequirePackage{xstring}
+\RequirePackage{proof}
+\RequirePackage{xstring}
+\RequirePackage{xspace}
+\RequirePackage{xifthen}
+\RequirePackage{stmaryrd}
+
+% misc math
+\newcommand{\dom}{\mathsf{dom}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Nat}{\mathbb{N}}
+\newcommand{\Rext}{\Real^{+\infty}}
+\newcommand{\Bool}{\mathbb{B}}
+\newcommand{\ctrue}{\mathtt{true}}
+\newcommand{\cfalse}{\mathtt{false}}
+\DeclareMathOperator{\bO}{\mathsf{O}}
+
+% misc text
+\newcommand*{\nth}[1]{\ensuremath{\text{#1}^{\text{th}}}}
+\newcommand*{\nst}[1]{\ensuremath{\text{#1}^{\text{st}}}}
+\newcommand*{\nrd}[1]{\ensuremath{\text{#1}^{\text{rd}}}}
+\newcommand*{\nnd}[1]{\ensuremath{\text{#1}^{\text{nd}}}}
+\newcommand{\stepref}[2]{\hypertarget{#1}{(\star_{#2})}\customlabel{#1}{$(\star_{#2})$}}
+
+% typesetting
+\newcommand*{\tpkt}{\rlap{$\;$.}}
+\newcommand*{\tkom}{\rlap{$\;$,}}
+\newcommand{\rulesep}{\unskip\ \vrule\ }
+
+\newcommand{\app}{\,}
+
+\newcommand*{\defsym}{\triangleq}
+\newcommand{\defiff}{\mathrel{{:}{\Leftrightarrow}}}
+\newcommand{\DEFIFF}{\qquad \mathrel{{:}{\Leftrightarrow}}\qquad}
+\newcommand{\IFF}{\qquad \Leftrightarrow \qquad}
+\newcommand{\Iff}{\Leftrightarrow}
+\newcommand{\IMP}{\qquad \Rightarrow \qquad}
+\newcommand{\Imp}{\Rightarrow}
+
+% probabilities
+\newcommand{\E}[2]{\mathbb{E}_{\scriptsize#1}[#2]}
+\newcommand{\Prob}[2]{\mathbb{P}_{#1}\ #2}
+\DeclareMathOperator*{\EEop}{\mathbb{E}}
+\newcommand{\EE}[2]{\EEop_{#1 \leftarrow #2}}
+\newcommand{\Distr}[1]{\mathsf{D}\app #1}
+\newcommand{\supp}{\mathsf{supp}}
+
+% logic
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% while lang
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% sets
+\newcommand{\Op}{\mathsf{Fun}}
+\newcommand{\Stmt}{\mathsf{Stmt}}
+\newcommand{\Var}{\mathsf{Var}}
+\newcommand{\GVar}{\mathsf{GVar}}
+\newcommand{\LVar}{\mathsf{LVar}}
+\newcommand{\Expr}{\mathsf{Expr}}
+\newcommand{\BExpr}{\mathsf{BExpr}}
+\newcommand{\SExpr}{\mathsf{SExpr}}
+\newcommand{\Prog}{\mathsf{Prog}}
+
+%% syntax
+\newcommand{\uncolor}[1]{\colorlet{#1}{.}}
+
+\definecolor{CODEKWD}{RGB}{7,61,111}
+\definecolor{CODEFN}{RGB}{14,113,89}
+\definecolor{CODECON}{RGB}{7,61,111}
+\newcommand{\uncolorcode}{\colorlet{codekwd}{.}\colorlet{codefn}{.}\colorlet{codecon}{.}}
+\newcommand{\colorcode}{\colorlet{codekwd}{CODEKWD}\colorlet{codefn}{CODEFN}\colorlet{codecon}{CODECON}}
+\colorcode
+
+% \definecolor{codecmt}{RGB}{65,120,242}
+\newcommand{\INDENT}{\quad}
+\newcommand{\kwd}[1]{{\color{codekwd}{\mathtt{#1}}}}
+\newcommand{\PAR}[1]{\text{\texttt{(}}#1\text{\texttt{)}}}
+% \newcommand{\PAR}[1]{(#1)}
+\newcommand{\CMT}[1]{\ \text{\color{gray} //\,\emph{#1}}}
+% \newcommand{\CMT}{\ws\text{\color{gray} \ttfamily //\ #1}}
+
+% \newenvironment{codeseq}{\begin{tblr}[t]{colspec={Q[l,mode=math,preto=\tt]},rowsep={0pt},column{1}= {rightsep=0pt,leftsep=0pt}}}{\end{tblr}}
+\newenvironment{codeseq}{\begin{array}[t]{@{}>{\tt}l@{}}}{\end{array}}
+\newenvironment{lalign}{\begin{array}[t]{@{}>{{}}l@{}}}{\end{array}}
+
+\makeatletter
+\def\ws{}
+\long\def\@chang#1{\\{\INDENT}\begin{codeseq}#1\end{codeseq}\\}
+\newcommand{\chang}[1]{#1\ \@ifnextchar\bgroup{\def\ws{}\@chang}{\def\ws{\ \def\ws{}}}}
+
+\let\spkt=;
+\let\le=<
+
+\catcode`;=\active
+\catcode`<=\active
+
+\def;{\ifmmode\text{\color{codekwd}\texttt{;}}\ {}\else\spkt\fi}
+\long\def\@ASGN#1{\ASGN}
+\long\def\@SAMPLE#1{\SAMPLE}
+\def<{\@ifnextchar -{\@ASGN}{\@ifnextchar *{\@SAMPLE}\le}}
+\makeatother
+
+
+\newcommand{\ASGN}{\mathrel{\kwd{\leftarrow}}}
+\newcommand{\SAMPLE}{\mathrel{\vbox{\offinterlineskip\ialign{\hfil##\hfil\cr{\tiny$\kwd{\text{\texttt{\$}}}$}\cr\noalign{\kern0ex}$\kwd{\leftarrow}$\cr}}}}
+\newcommand{\SKIP}{\kwd{skip}}
+\newcommand{\ABORT}{\kwd{abort}}
+\newcommand{\RET}[1]{\kwd{return}\ #1}
+%
+\NewDocumentCommand\CALL{m D{(}{)}{\,}}{\op{#1}\PAR{#2}}
+\NewDocumentCommand\PROC{m D{(}{)}{\,}}{\chang{\kwd{proc}\ \op{#1}\PAR{#2}}}
+\newcommand{\END}{\ws\kwd{\color{red}{end}}}
+%
+\NewDocumentCommand\WHILE{D<>{}}{\chang{\kwd{while^{#1}}}}
+\newcommand{\FOR}[3]{\kwd{for}\ #1 = #2\ \kwd{to}\ #3}
+\newcommand{\DO}{\ \chang{\kwd{do}}}
+\newcommand{\OD}{\ws\kwd{\color{red}{od}}}
+%
+\newcommand{\IF}{\protect\chang{\kwd{if}}}
+\newcommand{\THEN}{\ws\protect\chang{\kwd{then}}}
+\newcommand{\ELSE}{\ws\protect\chang{\kwd{else}}}
+\newcommand{\ELSEIF}{\ws\protect\chang{\kwd{elseif}}}
+\newcommand{\FI}{\ws\kwd{\color{red}{fi}}}
+\newcommand{\ITE}[3]{\IF#1\THEN#2\ELSE#3}
+
+\newcommand{\asrtstyle}{\colorlet{curcolor}{.}\ws\it\color{gray}\uncolorcode}
+\newcommand{\ASRT}{\asrtstyle\!\!\fatslash\ }
+\newcommand{\AEND}{\ \colorcode\color{curcolor}}
+
+% \newcommand{\ASRT}{\asrtstyle\{\,}
+% \newcommand{\ASRC}{\asrtstyle\phantom{\{}\,}
+% \newcommand{\AEND}{\,\}\ \colorcode\color{curcolor}}
+
+%
+\newcommand{\VAR}{\kwd{var}\;}
+\newcommand{\CVD}[1]{\kwd{#1}\;}
+\newcommand{\INCR}[1]{#1\op{{+}\!{+}}}
+\newcommand{\DECR}[1]{#1\op{{-}{-}}}
+
+\newenvironment{pwhile}[1][]{\hrulefill\par#1\begin{codeseq}}{\end{codeseq}\hrulefill}
+\newcommand{\pw}[1]{{\ensuremath{ \tt \begin{codeseq}#1\end{codeseq} }}}
+
+
+
+%% meta variables
+\newcommand{\command}[1]{\mathtt{#1}}
+\newcommand{\expression}[1]{\mathtt{#1}}
+\newcommand{\op}[1]{{\color{codefn}{\mathtt{#1}}}}
+\newcommand{\constr}[1]{{\color{codefn}{\mathtt{#1}}}}
+\newcommand{\iop}[1]{\mathrel{\op{#1}}}
+\newcommand{\cmd}{\command{C}}
+\newcommand{\cmdtwo}{\command{D}}
+\newcommand{\var}[1]{\mathtt{#1}}
+\newcommand{\vx}{\var{x}}
+\newcommand{\vy}{\var{y}}
+\newcommand{\vz}{\var{z}}
+\newcommand{\prog}{\mathtt{P}}
+\newcommand{\fn}{\op{f}}
+\newcommand{\fntwo}{\op{g}}
+\newcommand{\expr}{\expression{E}}
+\newcommand{\eret}{\expression{R}}
+\newcommand{\exprtwo}{\expression{F}}
+\newcommand{\bexpr}{\expression{B}}
+\newcommand{\sexpr}{\expression{S}}
+\newcommand{\sexprtwo}{\expression{H}}
+
+%% misc
+\newcommand{\modV}[1]{\mathsf{Mod}_{\uncolor{codefn}{#1}}}
+
+%% semantics
+\newcommand{\sem}[2][]{\llbracket #2 \rrbracket_{#1}}
+\newcommand{\Mem}{\mathsf{Mem}}
+\newcommand{\GMem}{\mathsf{GMem}}
+\newcommand{\LMem}{\mathsf{LMem}}
+\newcommand{\Val}{\mathsf{Val}}
+\newcommand{\env}{\eta}
+\newcommand{\aenv}[1]{\env^{(#1)}}
+\newcommand{\envtwo}{\zeta}
+
+\newcommand{\val}{v}
+\newcommand{\valtwo}{w}
+\newcommand{\mem}{m}
+\newcommand{\lmem}{m_l}
+\newcommand{\lmemz}{m^{0}_l}
+\newcommand{\gmem}{m_g}
+\newcommand{\mapped}{\slash}
+
+\newcommand{\dfail}{\mathbf{fail}}
+\newcommand{\dunit}[1]{\mathbf{dunit}\app #1}
+\newcommand{\dbind}[2]{\mathbf{dbind} \app #1 \app #2}
+\newcommand{\dlet}[3]{\dbind{#2}{(\lambda #1.\ #3)}}
+% \newcommand{\dlet}[3]{\mathsf{dlet}\ #1 = #2\ \mathsf{in}\ #3}
+% \newcommand{\dunit}[1]{\mathbf{return} \app #1}
+% \newcommand{\dbind}[2]{#1 \mathrel{\mathbf{\!>\!>\!=}} #2}
+% \newcommand{\dlet}[3]{\ #1 \mathrel{\mathbf{\leftarrow}} #2;\, #3}
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hoare
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\lub}{\mathsf{lub}}
+
+\newcommand{\ex}{f}
+\newcommand{\extwo}{g}
+\newcommand{\exthree}{h}
+\newcommand{\pred}{P}
+\newcommand{\predtwo}{Q}
+\newcommand{\predthree}{R}
+% \newcommand{\ex}{\varphi}
+% \newcommand{\extwo}{\psi}
+% \newcommand{\exthree}{\rho}
+\newcommand{\exf}{\iota}
+\newcommand{\exftwo}{\kappa}
+\newcommand{\ctx}{\Gamma}
+\newcommand{\rel}{\bowtie}
+\newcommand{\gd}[1][]{\mathrel{|}_{#1}}
+\newcommand{\Z}{\alpha}
+\newcommand{\valid}[1][]{\vDash_{#1}}
+\newcommand{\derivable}[1][]{\vdash_{#1}}
+\newcommand{\derivableCHL}{\vdash_{\mathsf{HL}}}
+
+\newcommand{\asrt}[1]{\{\, #1\,\}}
+% \newcommand{\HT}[4][]{\asrt{#2}\ #3 \ \asrt{#4}_{#1}}
+% \newcommand{\HTf}[4][]{\HT[#1]{#2}{#3}{#4}}
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% New Expectation Hoare
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \newcommandx{\NEHT}[5]{\asrt{#1\ |\ #2}\ #3 \ \asrt{#4\ |\ #5}}
+
+% \newcommandx{\NEHT}[5]{\asrt{\sfrac{#1}{#2}}\ \sfrac{#3}{\rel}\ \asrt{\sfrac{#4}{#5}}}
+
+
+\newcommandx{\HTrel}[1][1=]{%
+  \ifthenelse{\equal{#1}{upper}}{\geq}{\ifthenelse{\equal{#1}{lower}}{\leq}{\rel}}%
+}
+
+% \newcommandx{\HT}[6][1=]{
+%   \asrt{{#2}\mid{#3}}_{\HTrel[#1]}\
+%   {#4}\
+%   \asrt{{#5}\mid{#6}}%
+% }
+
+
+
+\newcommandx{\HT}[6][1=]{
+  \asrt{{#2}\mid{#3}}_{\HTrel[#1]}\
+  {#4}\
+  \asrt{{#5}\mid{#6}}%
+}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Relational Hoare
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Weakest Precondition Hoare
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\WP}[2]{\mathsf{wp}\left[{#1}\right]\left({#2}\right)}
+
+\newcommand{\ERHL}{\texttt{ERHL}\xspace}
+\newcommand{\lft}[1]{#1^{\langle 1 \rangle}}
+\newcommand{\rght}[1]{#1^{\langle 2 \rangle}}
+\newcommand{\COUPLE}{\sim}
+\newcommand{\RHT}[4]{{\textstyle\asrt{#1}\ #2 \COUPLE #3\ \asrt{#4}}}
+\newcommand{\rlift}[1]{\mathrel{#1^\dagger}}
+\newcommand{\coupled}[3]{#1 \triangleright #2 \mathrel{\&} #3}
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% text
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\tool}[1]{\texttt{#1}}
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% typesetting
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommandx{\mparbox}[3][1=l]{\text{\makebox[#2][#1]{\ensuremath{#3}}}}
+
+% links
+\makeatletter
+\newcommand{\customlabel}[2]{\protected@write \@auxout {}{\string \newlabel{#1}{{#2}{\thepage}{#2}{#1}{}} }}
+
+% conditionals
+\newcommand*{\when}[2]{\ifthenelse{#1}{#2}{}}
+\newcommand*{\whenempty}[2]{\when{\equal{#1}{}}{#2}}
+\newcommand*{\unlessempty}[2]{\ifthenelse{\equal{#1}{}}{}{#2}}
+
+
+% proof structuring
+\newenvironment{proofcases}
+{\begin{list}{\labelitemi}{
+ \setlength{\itemsep}{0pt}
+ \setlength{\topsep}{0pt}
+ \setlength{\parsep}{0pt}
+ \setlength{\partopsep}{0pt}
+ \setlength{\leftmargin}{10pt}
+ \setlength{\rightmargin}{0pt}
+ \setlength{\itemindent}{0pt}
+ \setlength{\labelsep}{5pt}
+ \setlength{\labelwidth}{10pt}}}
+{\end{list}}
+\newcommand{\proofcase}[1]{\item[-]\textsc{Case} #1.}
+\newcommand{\proofexpl}[1]{\text{\emph{\quad (#1)}}}
+% inference rules
+\newcommand*{\rlname}[3]{\ifx\\#3\\#2\else\ensuremath{#3}\fi}
+\newcommand*{\rlstyle}[1]{\textcolor{violet}{\textsc{#1}}} %
+\newcommand*{\rllabelstyle}[1]{\!\!\scalebox{0.8}{\rlstyle{[#1]}}}
+\newcommandx{\InferDef}[5][1=,2=,3=]{%
+  \expandarg
+  \def\lbl{\rlname{#1}{#2}{#3}}
+  \infer[\unlessempty{#1#2}{\rllabelstyle{\hypertarget{#1:#2}{\lbl}}}]{#4}{#5}%
+  \unlessempty{#1#2}{\customlabel{#1:#2}{\textsc{(\rlname{#1}{#2}{#3})}}}
+}
+\newcommandx{\InferStar}[4][1=,2=]{%
+  \infer[\unlessempty{#2}{\rllabelstyle{\ref{#1:#2}}}]{#3}{#4}}
+\NewDocumentCommand\Infer{s}{\IfBooleanTF#1\InferStar\InferDef}
+\newcommand*{\propty}[2]{#2~\text{\textbf{#1}}}
+
+\newenvironment{varitemize}
+{
+\begin{list}{\labelitemi}
+{\setlength{\itemsep}{0pt}
+ \setlength{\topsep}{0pt}
+ \setlength{\parsep}{0pt}
+ \setlength{\partopsep}{0pt}
+ \setlength{\leftmargin}{15pt}
+ \setlength{\rightmargin}{0pt}
+ \setlength{\itemindent}{0pt}
+ \setlength{\labelsep}{5pt}
+ \setlength{\labelwidth}{10pt}
+}}
+{
+ \end{list}
+}

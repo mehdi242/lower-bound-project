@@ -1,0 +1,131 @@
+% !TeX spellcheck = en_US
+\documentclass[acmsmall,natbib,review,screen,anonymous,10pt]{acmart}
+% TODO: FINALIZE
+\settopmatter{printfolios=true,printccs=false,printacmref=false}
+
+%\newcommand{\commentaire}{}
+\newcommand{\MA}[1]{\ifdefined\commentaire{{{\color{green!60!black!55} 
+\texttt{[#1]}}}}\fi}
+\newcommand{\GM}[1]{\ifdefined\commentaire{{{\color[HTML]{5100FF} 
+\texttt{[#1]}}}}\fi}
+\newcommand{\GV}[1]{\ifdefined\commentaire{{{\color[HTML]{5100FF} 
+\texttt{\small[#1]}}}}\fi}
+\newcommand{\gb}[1]{\ifdefined\commentaire{{{\color{green!60!black!55} 
+\texttt{[#1]}}}}\fi}
+\newcommand{\bg}[1]{\ifdefined\commentaire{{{\color{green!60!black!55} 
+\texttt{[#1]}}}}\fi}
+\newcommand{\blue}[1]{\color[HTML]{0008FF} #1}
+
+
+\newcommand*{\EHL}{\texttt{eHL}\xspace} %MA: abbreviation for expectation logic
+\newcommand*{\HL}{\texttt{HL}\xspace}
+\newcommand*{\PRHL}{\texttt{pRHL}\xspace}
+\newcommand*{\ec}{\texttt{EasyCrypt}\xspace}
+\newcommand{\easycrypt}{\ec}
+
+\acmJournal{PACMPL}
+\acmVolume{1}
+\acmNumber{CONF} % CONF = POPL or ICFP or OOPSLA
+\acmArticle{1}
+\acmYear{2018}
+\acmMonth{1}
+\acmDOI{} % \acmDOI{10.1145/nnnnnnn.nnnnnnn}
+\startPage{1}
+\setcopyright{none}
+
+\bibliographystyle{ACM-Reference-Format}
+\citestyle{acmauthoryear}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\usepackage{multicol}
+\usepackage{xspace}
+\usepackage{xfrac}
+\usepackage{tikz}
+\usetikzlibrary{matrix,backgrounds,arrows.meta}
+\usepackage{cleveref}
+\usepackage{sbnf}
+\usepackage{paper}
+
+\makeatletter
+\let\@msm@th@eqref\eqref
+\renewcommand{\eqref}[1]{%
+  \begingroup
+  \leavevmode
+  \color{violet}%
+  \hypersetup{linkbordercolor=[named]{violet}}%
+  \@msm@th@eqref{#1}%
+  \endgroup
+}
+\makeatother
+
+\newcommand{\eqtag}[1]{\tag{{\color{violet}{#1}}}}
+
+\captionsetup{subrefformat=parens}
+
+\begin{document}
+
+\title{Lower bound reasoning with \textsf{eHL}}
+
+\maketitle
+
+\begin{figure}
+    \[
+      \begin{array}{cc}
+        \multicolumn{2}{c}{
+        \Infer[hoare][skip]
+        {\HT{\pred}{\ex}{\SKIP}{\pred}{\ex}}
+        {}}
+        \\[3mm]
+        \multicolumn{2}{c}{
+        \Infer[hoare][assign]
+        {\HT{\pred[\vx \mapped \expr]}{\ex[\vx \mapped \expr]}{\vx <- \expr}{\pred}{\ex}}
+        {}}
+        \\[3mm]
+        \multicolumn{2}{c}{
+        \Infer[hoare][sample]
+        {\HT{\forall \val \in \supp(\sexpr),\ \pred[\vx \mapped \val]}{\E{\sexpr}{\lambda \val.\, \ex[\vx \mapped \val]}}{\vx <* \sexpr}{{\pred}}{\ex}}
+        {}}
+        \\[3mm]
+        \multicolumn{2}{c}{
+        \Infer[hoare][seq]
+        {\HT{\pred}{\ex}{\cmd;\cmdtwo}{\predtwo}{\extwo}}
+        {\HT{\pred}{\ex}{\cmd}{\predthree}{\exthree} & \HT{\predthree}{\exthree}{\cmdtwo}{\predtwo}{\extwo}}}
+        \\[3mm]
+        \multicolumn{2}{c}{
+        \Infer[hoare][if]
+        {\HT{\pred}{\ex}{\ITE{\bexpr}{\cmd}{\cmdtwo}}{\predtwo}{\extwo}}
+        {\HT{\bexpr\land\pred}{\ex}{\cmd}{\predtwo}{\extwo}& \HT{\neg\bexpr\land\pred}{\ex}{\cmdtwo}{\predtwo}{\extwo}}}
+        \\[3mm]
+        \multicolumn{2}{c}{
+        \Infer[hoare][while]
+        {\HT{\pred}{\lub\ex_{k}}{\WHILE\bexpr\DO\cmd}{\neg\bexpr\land\pred}{\extwo}}
+        {\bexpr \land \pred \valid \ex_{0} \HTrel 0 
+        & \forall k.\, \HT{\bexpr\land\pred}{\ex_{k+1}}{\cmd}{\pred}{\ex_{k}}
+        & \neg\bexpr \land \pred \valid \ex_{k} \HTrel g}
+        }
+      \end{array}
+    \]
+  \caption{\EHL for lower and upper-bounds. Here ${\rel} \in \{{\leq},{\geq}\}$.}\label{fig:hoare:l-u}
+\end{figure}
+
+\begin{figure}
+    \[
+      \Infer[hoare][while]
+      {\HT[lower]{\pred}{\ex}{\WHILE\bexpr\DO\cmd}{\neg\bexpr\land\pred}{\ex}}
+      {
+        \HT[lower]{\bexpr\land\pred}{\ex}{\cmd}{\pred}{\ex}
+        & \bexpr \land \pred \valid r_0 \geq \ex
+        & \forall i.\, \HT[upper]{\bexpr\land\pred}{r_{i+1}}{\cmd}{\top}{[\pred]\cdot r_i}
+        & \bexpr \land \pred \valid \lim_{i \to \infty} r_i = 0 
+      }
+    \]
+  \caption{The \textsc{While} rule for \textsf{eHL} lower bounds.}\label{fig:hoare:while-lb}
+\end{figure}
+
+\end{document}

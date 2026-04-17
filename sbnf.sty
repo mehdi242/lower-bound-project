@@ -1,0 +1,25 @@
+\RequirePackage{tabularray}
+\UseTblrLibrary{booktabs}
+
+\newcommand{\bnfdef}{\mathrel{::=}}
+\newcommand{\bnfmid}{\mid}
+\newcommand{\bnfcmt}[1]{#1}
+\def\bnfsep{\bnfdef}
+
+\newcommand{\bnfmksep}[1]{\phantom{{}\bnfdef{}}\llap{\text{\ensuremath{{}#1{}}}}{}}
+\newcommand{\checkemptydecl}[1]{\ifx\\#1\\\else #1\global\def\bnfsep{{}\bnfdef{}}\fi}%
+\newcommand{\checkemptycase}[1]{{\bnfsep} \ifx\\#1\\ \global\def\bnfsep{\bnfmksep{}}\else{#1}\global\def\bnfsep{\bnfmksep{\bnfmid}}\fi}%
+
+\newcommand{\bnfcmtcmd}[1]{\ifx\\#1\\\else\bnfcmt{#1}\fi}
+\NewColumnType{H}{X[-1,r,mode=math,cmd=\checkemptydecl]}
+\NewColumnType{C}{X[l,mode=math,cmd=\checkemptycase]}
+\NewColumnType{D}{X[-1,r,mode=text,cmd=\bnfcmtcmd]}
+\newenvironment{bnf}
+{\par\medskip
+\begin{tblr}{
+      colspec = {HCD},
+      rowsep={1pt},
+      column{1} = {rightsep=0pt},
+      column{2} = {leftsep=0pt}
+    }}
+{\end{tblr}\par\medskip}
