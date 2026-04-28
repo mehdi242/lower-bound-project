@@ -121,11 +121,48 @@
       {
         \HT[lower]{\bexpr\land\pred}{\ex}{\cmd}{\pred}{\ex}
         & \bexpr \land \pred \valid r_0 \geq \ex
-        & \forall i.\, \HT[upper]{\bexpr\land\pred}{r_{i+1}}{\cmd}{\top}{[\pred]\cdot r_i}
-        & \bexpr \land \pred \valid \lim_{i \to \infty} r_i = 0 
+        & \forall i \geq 0.\, \HT[upper]{\bexpr\land\pred}{r_{i+1}}{\cmd}{\top}{[\pred]\cdot r_i}
+        & \bexpr \land \pred \valid \lim_{i \to \infty} r_i = 0
       }
     \]
-  \caption{The \textsc{While} rule for \textsf{eHL} lower bounds.}\label{fig:hoare:while-lb}
+  \caption{The \textsc{While} rule for \textsf{eHL} lower bounds. The rule is
+  specific to the lower-bound judgment: Premise~1
+  is a lower-bound triple on the body, while Premise~3 is an
+  \emph{upper}-bound triple used purely to bound the in-loop mass. The sequence $\{r_i\}_{i \geq 0}$
+  consists of non-negative expectations $r_i : \mathrm{State} \to
+  \mathbb{R}^+$.}\label{fig:hoare:while-lb}
 \end{figure}
+
+
+\paragraph{Notation.}
+For a predicate $\pred$ we use two indicator-style operators, one tailored to
+each direction of reasoning:
+\[
+  [\pred] \;=\;
+  \begin{cases} 1 & \text{if } \pred \\ 0 & \text{otherwise} \end{cases}
+  \qquad\text{(used for lower bounds)}
+  \\[3mm]
+\]
+\[
+  \langle \pred \rangle \;=\;
+  \begin{cases} 1 & \text{if } \pred \\ \infty & \text{otherwise} \end{cases}
+  \qquad\text{(used for upper bounds)}
+  \\[3mm]
+\]
+Given a (state-indexed) expectation $r$, the expressions $[\pred] \cdot r$ and
+$\langle \pred \rangle \cdot r$ denote the corresponding pointwise products:
+$[\pred] \cdot r$ agrees with $r$ on states satisfying $\pred$ and is zero
+elsewhere, while $\langle \pred \rangle \cdot r$ agrees with $r$ on states
+satisfying $\pred$ and is $\infty$ elsewhere.
+
+\paragraph{The witness sequence $\{r_i\}_{i \in \mathbb{N}}$.}
+The rule of \Cref{fig:hoare:while-lb} uses a sequence $\{r_i\}_{i \geq 0}$ of
+non-negative expectations as a termination witness: intuitively, $r_i$ is a
+(user-chosen) upper bound on how much of the post-expectation mass of $\ex$ is
+still trapped inside the loop after $i$ body executions. Premise~2 ties $r_i$
+to $\ex$ at $i=0$ by requiring $r_0 \geq \ex$; Premise~3 propagates the bound
+across one iteration of the body; and Premise~4 forces the bound --- and thus
+the trapped mass --- to vanish in the limit.
+
 
 \end{document}
