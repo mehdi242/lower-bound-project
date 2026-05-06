@@ -164,5 +164,243 @@ to $\ex$ at $i=0$ by requiring $r_0 \geq \ex$; Premise~3 propagates the bound
 across one iteration of the body; and Premise~4 forces the bound --- and thus
 the trapped mass --- to vanish in the limit.
 
+\newpage
+\appendix
+
+% ======================================================================
+\section{Soundness of the \textsc{While} Rule}\label{app:while-soundness}
+% ======================================================================
+
+\paragraph{Goal.}
+We want to show that the following rule is sound:
+\[
+  [\pred] \cdot \ex
+  \;\leq\;
+  \WP{\WHILE\bexpr\DO\cmd}{[\pred \wedge \neg\bexpr] \cdot \ex}
+\]
+
+\paragraph{Definitions.}
+Define the family of approximating programs:
+\[
+  W_n
+  \;\defsym\;
+  \bigl(\kwd{if}\ \bexpr\ \kwd{then}\ \cmd\bigr)^n
+  \mathbin{;}
+  \kwd{if}\ \bexpr\ \kwd{then}\ \ABORT
+\]
+where $W_n$ allows at most $n$ iterations; if the loop would continue beyond $n$,
+it aborts. Define:
+\[
+  I_n \;\defsym\; [\pred] \cdot \WP{W_n}{[\pred \wedge \neg\bexpr] \cdot \ex}
+\]
+
+% ----------------------------------------------------------------------
+\begin{lemma}[Recursive characterisation of $I_n$]\label{lem:In-recursion}
+\[
+  I_0 \;=\; [\pred \wedge \neg\bexpr] \cdot \ex
+  \qquad\text{and}\qquad
+  I_{n+1}
+  \;=\; [\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot I_n}
+        + [\pred \wedge \neg\bexpr] \cdot \ex
+\]
+\end{lemma}
+
+\begin{proof}
+By induction on $n$.
+
+\medskip\noindent\textbf{Base case $n=0$.}
+\begin{align*}
+  I_0
+  &= [\pred] \cdot
+     \WP{\kwd{if}\ \bexpr\ \kwd{then}\ \ABORT}{[\pred \wedge \neg\bexpr] \cdot \ex} \\
+  &= [\pred] \cdot \Bigl(
+       [\bexpr] \cdot \WP{\ABORT}{[\pred \wedge \neg\bexpr] \cdot \ex}
+     + [\neg\bexpr] \cdot [\pred \wedge \neg\bexpr] \cdot \ex\Bigr) \\
+  &= [\pred] \cdot \bigl([\bexpr] \cdot 0
+     + [\neg\bexpr] \cdot [\pred \wedge \neg\bexpr] \cdot \ex\bigr) \\
+  &= [\pred] \cdot [\pred \wedge \neg\bexpr] \cdot \ex
+   \;=\; [\pred \wedge \neg\bexpr] \cdot \ex \quad\checkmark
+\end{align*}
+where we used $\WP{\ABORT}{\cdot} = 0$ and
+$[\pred] \cdot [\pred \wedge \neg\bexpr] = [\pred \wedge \neg\bexpr]$.
+
+\medskip\noindent\textbf{Inductive step $n \to n+1$.}
+\begin{align*}
+  I_{n+1}
+  &= [\pred] \cdot \WP{(\kwd{if}\ \bexpr\ \kwd{then}\ \cmd)^{n+1}
+     \mathbin{;} \kwd{if}\ \bexpr\ \kwd{then}\ \ABORT}{[\pred \wedge \neg\bexpr] \cdot \ex}
+\end{align*}
+Unfolding
+$(\kwd{if}\ \bexpr\ \kwd{then}\ \cmd)^{n+1}
+ = \kwd{if}\ \bexpr\ \kwd{then}\ \cmd
+   \mathbin{;} (\kwd{if}\ \bexpr\ \kwd{then}\ \cmd)^n$
+and applying the SEQ rule:
+\begin{align*}
+  &= [\pred] \cdot
+     \WP{\kwd{if}\ \bexpr\ \kwd{then}\ \cmd}{\WP{W_n}{[\pred \wedge \neg\bexpr] \cdot \ex}}
+\end{align*}
+By sub-induction one verifies $[\pred] \cdot I_k = I_k$ for all $k$
+(since $I_0 = [\pred \wedge \neg\bexpr] \cdot \ex$ and each $I_{k+1}$
+carries $[\pred \wedge \bexpr]$ or $[\pred \wedge \neg\bexpr]$ as a factor),
+so in particular:
+\[
+  \WP{W_n}{[\pred \wedge \neg\bexpr] \cdot \ex}
+  \;=\; [\pred] \cdot \WP{W_n}{[\pred \wedge \neg\bexpr] \cdot \ex}
+  \;=\; I_n
+\]
+Therefore:
+\begin{align*}
+  &= [\pred] \cdot \WP{\kwd{if}\ \bexpr\ \kwd{then}\ \cmd}{I_n} \\
+  &= [\pred] \cdot \bigl([\bexpr] \cdot \WP{\cmd}{I_n} + [\neg\bexpr] \cdot I_n\bigr) \\
+  &= [\pred \wedge \bexpr] \cdot \WP{\cmd}{I_n} + [\pred \wedge \neg\bexpr] \cdot I_n
+\end{align*}
+Using $[\pred] \cdot I_n = I_n$ and the identity
+$[\pred \wedge \neg\bexpr] \cdot I_n = [\pred \wedge \neg\bexpr] \cdot \ex$
+(which follows from $[\neg\bexpr] \cdot I_n
+ = [\neg\bexpr] \cdot [\pred \wedge \neg\bexpr] \cdot \ex
+ = [\pred \wedge \neg\bexpr] \cdot \ex$):
+\[
+  I_{n+1}
+  \;=\; [\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot I_n}
+        + [\pred \wedge \neg\bexpr] \cdot \ex
+  \quad\checkmark\qedhere
+\]
+\end{proof}
+
+% ----------------------------------------------------------------------
+
+\begin{lemma}[Key inequality]\label{lem:key-ineq}
+Assuming premises \textnormal{(a)}, \textnormal{(b)}, \textnormal{(c)},
+for all $n \geq 0$:
+\[
+  [\pred] \cdot I_n + [\pred] \cdot r_n \;\geq\; [\pred] \cdot \ex
+\]
+\end{lemma}
+
+\begin{proof}
+By induction on $n$.
+
+\medskip\noindent\textbf{Base case $n = 0$.}
+\[
+  [\pred] \cdot I_0 + [\pred] \cdot r_0
+  \;=\; [\pred \wedge \neg\bexpr] \cdot \ex + [\pred] \cdot r_0
+\]
+By premise~(b), $[\pred] \cdot r_0 \geq [\pred \wedge \bexpr] \cdot \ex$, so:
+\[
+  \;\geq\; [\pred \wedge \neg\bexpr] \cdot \ex + [\pred \wedge \bexpr] \cdot \ex
+  \;=\; [\pred] \cdot \ex \quad\checkmark
+\]
+
+\medskip\noindent\textbf{Inductive step $n \to n+1$.}
+Expanding $I_{n+1}$ by \Cref{lem:In-recursion}:
+\begin{align*}
+  [\pred] \cdot I_{n+1} + [\pred] \cdot r_{n+1}
+  &= [\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot I_n}
+     + [\pred \wedge \neg\bexpr] \cdot \ex
+     + [\pred] \cdot r_{n+1}
+\end{align*}
+By premise~(c), $[\pred] \cdot r_{n+1} \geq [\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot r_n}$:
+\begin{align*}
+  &\geq [\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot I_n}
+        + [\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot r_n}
+        + [\pred \wedge \neg\bexpr] \cdot \ex
+\end{align*}
+By linearity of $\WP{\cmd}{\cdot}$:
+\begin{align*}
+  &= [\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot I_n + [\pred] \cdot r_n}
+     + [\pred \wedge \neg\bexpr] \cdot \ex
+\end{align*}
+By the induction hypothesis
+$[\pred] \cdot I_n + [\pred] \cdot r_n \geq [\pred] \cdot \ex$
+and monotonicity of $\WP{\cmd}{\cdot}$:
+\begin{align*}
+  &\geq [\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot \ex}
+        + [\pred \wedge \neg\bexpr] \cdot \ex
+\end{align*}
+By premise~(a),
+$[\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot \ex} \geq [\pred \wedge \bexpr] \cdot \ex$:
+\[
+  \;\geq\; [\pred \wedge \bexpr] \cdot \ex + [\pred \wedge \neg\bexpr] \cdot \ex
+  \;=\; [\pred] \cdot \ex \quad\checkmark\qedhere
+\]
+\end{proof}
+
+% ----------------------------------------------------------------------
+\paragraph{Main result.}
+From \Cref{lem:key-ineq}, for all $n \geq 0$:
+\[
+  [\pred] \cdot I_n + [\pred] \cdot r_n \;\geq\; [\pred] \cdot \ex
+\]
+Taking the limit:
+\[
+  \lim_n ([\pred] \cdot I_n) + \lim_n ([\pred] \cdot r_n) \;\geq\; [\pred] \cdot \ex
+\]
+By condition~(d), $\lim_n r_n = 0$, so $\lim_n ([\pred] \cdot r_n) = 0$:
+\[
+  \lim_n ([\pred] \cdot I_n) \;\geq\; [\pred] \cdot \ex
+\]
+By Scott-continuity and \Cref{lem:In-recursion},
+$\lim_n I_n = \WP{\WHILE\bexpr\DO\cmd}{[\pred \wedge \neg\bexpr] \cdot \ex}$,
+giving:
+\[
+  \WP{\WHILE\bexpr\DO\cmd}{[\pred \wedge \neg\bexpr] \cdot \ex}
+  \;\geq\; [\pred] \cdot \ex
+\]
+which is exactly the desired conclusion. \qed
+
+% ======================================================================
+\section{Relative Completeness}\label{app:relative-completeness}
+% ======================================================================
+
+\paragraph{Theorem: Relative Completeness.}
+\vspace{3mm}
+
+\noindent\textbf{Assumptions:}
+\begin{align*}
+  1. \quad & [\pred] \cdot \ex \;\leq\; \WP{\WHILE\bexpr\DO\cmd}{[\neg\bexpr \wedge \pred] \cdot \ex} \\
+  2. \quad & [\bexpr\land\pred] \cdot \ex \;\leq\; \WP{\cmd}{[\pred] \cdot \ex}
+\end{align*}
+
+\noindent\textbf{Definitions:}
+\begin{align*}
+  H &\defsym \WP{\WHILE\bexpr\DO\cmd}{[\neg\bexpr \wedge \pred] \cdot \ex} \\
+  I_0 &\defsym [\neg\bexpr \wedge \pred] \cdot \ex \\
+  I_{i+1} &\defsym [\bexpr] \cdot \WP{\cmd}{I_i} + I_0 \\
+  r_i &\defsym H - I_i
+\end{align*}
+
+\noindent\textbf{Verification of Premise 2:}
+\begin{align*}
+  \bexpr \wedge \pred &\implies I_0 = 0 \\
+  r_0 &= H - I_0 = H \\
+  \text{From (1): } H &\geq [\pred] \cdot \ex \implies H \geq \ex \\
+  \quad [\bexpr\land\pred] \cdot r_0 &\geq [\bexpr\land\pred] \cdot \ex
+\end{align*}
+
+$$\begin{aligned}
+& \textbf{Verification of Premise 2:} \\
+& \bexpr \wedge \pred \implies I_0 = 0 \\
+& r_0 = H - I_0 = H \\
+& \text{P holds so: } H \ge [\pred] \cdot \ex \implies H \ge \ex \\
+& [\bexpr \wedge \pred] \cdot r_0 \ge [\bexpr \wedge \pred] \cdot \ex
+\end{aligned}$$
+
+\noindent\textbf{Verification of Premise 3:}
+\begin{align*}
+  H &= [\bexpr] \cdot \WP{\cmd}{H} + I_0 \\
+  r_{i+1} &= H - I_{i+1} \\
+  r_{i+1} &= ([\bexpr] \cdot \WP{\cmd}{H} + I_0) - ([\bexpr] \cdot \WP{\cmd}{I_i} + I_0) \\
+  r_{i+1} &= [\bexpr] \cdot (\WP{\cmd}{H} - \WP{\cmd}{I_i}) \\
+  r_{i+1} &= [\bexpr] \cdot \WP{\cmd}{H - I_i} = [\bexpr] \cdot \WP{\cmd}{r_i} \\
+  \text{By Monotonicity: } r_i &\geq [\pred] \cdot r_i \implies \WP{\cmd}{r_i} \geq \WP{\cmd}{[\pred] \cdot r_i} \\
+  \quad [\bexpr\land\pred] \cdot r_{i+1} &\geq [\bexpr\land\pred] \cdot \WP{\cmd}{[\pred] \cdot r_i}
+\end{align*}
+
+\noindent\textbf{Verification of Premise 4:}
+\begin{align*}
+  \lim_{i \to \infty} I_i &= H \\
+  \lim_{i \to \infty} r_i &= H - \lim_{i \to \infty} I_i = H - H = 0 \\
+  \quad \lim_{i \to \infty} r_i &= 0
+\end{align*}
 
 \end{document}
