@@ -51,6 +51,7 @@
 \usepackage{cleveref}
 \usepackage{sbnf}
 \usepackage{paper}
+\usepackage{float}
 
 \makeatletter
 \let\@msm@th@eqref\eqref
@@ -74,7 +75,7 @@
 
 \maketitle
 
-\begin{figure}
+\begin{figure}[H]
     \[
       \begin{array}{cc}
         \multicolumn{2}{c}{
@@ -114,7 +115,8 @@
   \caption{\EHL for lower and upper-bounds. Here ${\rel} \in \{{\leq},{\geq}\}$.}\label{fig:hoare:l-u}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
+  \small
     \[
       \Infer[hoare][while]
       {\HT[lower]{\pred}{\ex}{\WHILE\bexpr\DO\cmd}{\neg\bexpr\land\pred}{\ex}}
@@ -165,6 +167,7 @@ across one iteration of the body; and Premise~4 forces the bound --- and thus
 the trapped mass --- to vanish in the limit.
 
 \newpage
+
 \appendix
 
 % ======================================================================
@@ -263,7 +266,7 @@ $[\pred \wedge \neg\bexpr] \cdot I_n = [\pred \wedge \neg\bexpr] \cdot \ex$
   I_{n+1}
   \;=\; [\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot I_n}
         + [\pred \wedge \neg\bexpr] \cdot \ex
-  \quad\checkmark\qedhere
+  \quad\checkmark
 \]
 \end{proof}
 
@@ -321,7 +324,7 @@ By premise~(a),
 $[\pred \wedge \bexpr] \cdot \WP{\cmd}{[\pred] \cdot \ex} \geq [\pred \wedge \bexpr] \cdot \ex$:
 \[
   \;\geq\; [\pred \wedge \bexpr] \cdot \ex + [\pred \wedge \neg\bexpr] \cdot \ex
-  \;=\; [\pred] \cdot \ex \quad\checkmark\qedhere
+  \;=\; [\pred] \cdot \ex \quad\checkmark
 \]
 \end{proof}
 
@@ -348,6 +351,9 @@ giving:
 \]
 which is exactly the desired conclusion. \qed
 
+
+
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 % ======================================================================
 \section{Relative Completeness}\label{app:relative-completeness}
 % ======================================================================
@@ -402,5 +408,8 @@ $$\begin{aligned}
   \lim_{i \to \infty} r_i &= H - \lim_{i \to \infty} I_i = H - H = 0 \\
   \quad \lim_{i \to \infty} r_i &= 0
 \end{align*}
+
+\input{derived-rules.tex}
+
 
 \end{document}

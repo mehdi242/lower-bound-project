@@ -1,0 +1,207 @@
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
+% ======================================================================
+\section{Derived Rules}\label{app:derived-rules}
+% ======================================================================
+
+\subsection{Multiplicative decay}\label{app:mult-decay}
+
+\small\[
+  \Infer[hoare][while-mult]
+  {\HT[lower]{\pred}{\ex}{\WHILE\bexpr\DO\cmd}{\neg\bexpr\land\pred}{\ex}}
+  {
+    \HT[lower]{\bexpr\land\pred}{\ex}{\cmd}{\pred}{\ex}
+    & \bexpr \land \pred \valid V \geq \ex
+    & \HT[upper]{\bexpr\land\pred}{\beta \cdot V}{\cmd}{\top}{[\pred] \cdot V}
+    & \beta \in [0,1)
+    & \bexpr \land \pred \valid V < \infty
+  }
+\]
+\\
+\subsubsection{Proof via Main Rule Soundness.}~\\
+\textbf{Premises:}
+\begin{align*}
+  \text{(1) } [\bexpr \wedge \pred] \cdot \ex &\le \WP{\cmd}{[\pred] \cdot \ex} \\
+  \text{(2) } V &\geq \ex \\
+  \text{(3) } \WP{\cmd}{[\pred] \cdot V} &\le \beta \cdot V, \quad \beta < 1 \\
+  \text{(4) } V &< \infty
+\end{align*}
+
+\noindent\textbf{Proof Strategy:} $r_i \defsym \beta^i \cdot V$.
+
+\noindent\textbf{Verification of Main Rule Premise 2:}
+\begin{align*}
+  r_0 = V \xrightarrow{\text{by (2)}} r_0 \ge \ex
+    &\implies [\bexpr \wedge \pred] \cdot r_0 \ge [\bexpr \wedge \pred] \cdot \ex
+\end{align*}
+
+\noindent\textbf{Verification of Main Rule Premise 3:}
+\begin{align*}
+  \WP{\cmd}{[\pred] \cdot r_i} &= \WP{\cmd}{[\pred] \cdot \beta^i \cdot V} = \beta^i \cdot \WP{\cmd}{[\pred] \cdot V} \\
+    &\le \beta^i \cdot (\beta \cdot V) \quad \text{(by (3))} \\
+    &= \beta^{i+1} \cdot V = r_{i+1} \\
+  \implies [\bexpr \wedge \pred] \cdot r_{i+1} &\ge [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot r_i}
+\end{align*}
+
+\noindent\textbf{Verification of Main Rule Premise 4:}
+\begin{align*}
+  \lim_{i \to \infty} r_i = \lim_{i \to \infty} (\beta^i \cdot V) \xrightarrow{\beta < 1, V < \infty} 0
+    &\implies \lim_{i \to \infty} [\bexpr \wedge \pred] \cdot r_i = 0
+\end{align*}
+
+\noindent\textbf{Conclusion:} Soundness follows from the main rule. \quad \checkmark
+\\
+\subsubsection{Direct Proof.}~\\
+\noindent\textbf{Definitions:} (Recall $I_n$ from \Cref{lem:In-recursion})
+\begin{align*}
+  r_i &\defsym \beta^i \cdot V
+\end{align*}
+
+\noindent\textbf{Auxiliary inequality on $\bexpr \wedge \pred$:}
+\begin{align*}
+  [\bexpr \wedge \pred] \cdot \beta \cdot V &\geq \WP{\cmd}{[\pred] \cdot V} \quad \text{(premise 3)} \\
+  \beta^n \cdot [\bexpr \wedge \pred] \cdot \beta \cdot V &\geq \beta^n \cdot \WP{\cmd}{[\pred] \cdot V} \\
+  [\bexpr \wedge \pred] \cdot r_{n+1} &\geq \WP{\cmd}{[\pred] \cdot r_n} \quad \text{(by linearity)}
+\end{align*}
+
+\noindent\textbf{Key inequality:} $\forall n.\ [\pred] \cdot I_n + [\pred] \cdot r_n \geq [\pred] \cdot \ex$ (by induction)
+
+\noindent\textit{Base case $n = 0$:}
+\begin{align*}
+  [\pred] \cdot I_0 + [\pred] \cdot r_0
+    &= [\neg\bexpr \wedge \pred] \cdot \ex + [\pred] \cdot V \\
+    &\geq [\neg\bexpr \wedge \pred] \cdot \ex + [\bexpr \wedge \pred] \cdot V \\
+    &\geq [\neg\bexpr \wedge \pred] \cdot \ex + [\bexpr \wedge \pred] \cdot \ex \quad \text{(by premise 2)} \\
+    &= [\pred] \cdot \ex
+\end{align*}
+
+\noindent\textit{Inductive step $n \to n+1$ (using \Cref{lem:In-recursion} for $I_{n+1}$):}
+\begin{align*}
+  [\pred] \cdot I_{n+1} + [\pred] \cdot r_{n+1}
+    &= [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot I_n} + [\neg\bexpr \wedge \pred] \cdot \ex + [\pred] \cdot r_{n+1} \\
+    &\geq [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot I_n} + [\neg\bexpr \wedge \pred] \cdot \ex + [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot r_n} \\
+    &= [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot I_n + [\pred] \cdot r_n} + [\neg\bexpr \wedge \pred] \cdot \ex \quad \text{(by linearity)} \\
+    &\geq [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot \ex} + [\neg\bexpr \wedge \pred] \cdot \ex \quad \text{(by IH + monotonicity)} \\
+    &\geq [\bexpr \wedge \pred] \cdot \ex + [\neg\bexpr \wedge \pred] \cdot \ex \quad \text{(by premise 1)} \\
+    &= [\pred] \cdot \ex
+\end{align*}
+
+\noindent\textbf{Limit argument:}
+\begin{align*}
+  \beta \in [0,1),\ \bexpr \wedge \pred \implies V < \infty
+    &\implies \lim_{n \to \infty} r_n = 0 \\
+  \lim_{n \to \infty} I_n
+    &= \WP{\WHILE\bexpr\DO\cmd}{[\neg\bexpr \wedge \pred] \cdot \ex} \quad \text{(by Scott-continuity)} \\
+  \implies [\pred] \cdot \ex &\leq \WP{\WHILE\bexpr\DO\cmd}{[\neg\bexpr \wedge \pred] \cdot \ex} \quad \checkmark
+\end{align*}
+
+
+\subsection{Additive decrease}\label{app:add-decrease}
+
+\paragraph{Rule.}
+\[
+  \Infer[hoare][while-add]
+  {\HT[lower]{\pred}{\ex}{\WHILE\bexpr\DO\cmd}{\neg\bexpr\land\pred}{\ex}}
+  {
+    \HT[lower]{\bexpr\land\pred}{\ex}{\cmd}{\pred}{\ex}
+    & \bexpr \land \pred \valid V \geq \ex
+    & [\bexpr \wedge \pred] \cdot V \geq \WP{\cmd}{[\pred] \cdot V} + \epsilon
+    & \epsilon > 0
+    & \bexpr \land \pred \valid V \leq M
+  }
+\]
+\\
+\subsubsection{Proof via Main Rule Soundness.}~\\
+\noindent\textbf{Premises:}
+\begin{align*}
+  \text{(1) } [\bexpr \wedge \pred] \cdot \ex &\le \WP{\cmd}{[\pred] \cdot \ex} \\
+  \text{(2) } V &\geq \ex \\
+  \text{(3) } \WP{\cmd}{[\pred] \cdot V} &\le V - \epsilon \\
+  \text{(4) } \epsilon > 0, \ &V \leq M
+\end{align*}
+
+\noindent\textbf{Proof Strategy:} $r_i \defsym \max(0, V - i \cdot \epsilon)$.
+
+\noindent\textbf{Verification of Main Rule Premise 2:}
+\begin{align*}
+  r_0 = V \xrightarrow{\text{by (2)}} r_0 \ge \ex
+    &\implies [\bexpr \wedge \pred] \cdot r_0 \ge [\bexpr \wedge \pred] \cdot \ex
+\end{align*}
+
+\noindent\textbf{Verification of Main Rule Premise 3:}
+\begin{align*}
+  \text{Assume } V - i\epsilon > 0 &\text{ (otherwise } r_i = 0 \text{ trivially):} \\
+  \WP{\cmd}{[\pred] \cdot r_i} &\le \WP{\cmd}{[\pred] \cdot (V - i\epsilon)} = \WP{\cmd}{[\pred] \cdot V} - i\epsilon \\
+    &\le (V - \epsilon) - i\epsilon \quad \text{(by (3))} \\
+    &= V - (i+1)\epsilon \le r_{i+1} \\
+  \implies [\bexpr \wedge \pred] \cdot r_{i+1} &\ge [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot r_i}
+\end{align*}
+
+\noindent\textbf{Verification of Main Rule Premise 4:}
+\begin{align*}
+  \text{Since } \epsilon > 0 \text{ and } V \leq M < \infty, &\ \exists N \text{ s.t. } \forall i > N: V - i\epsilon \le 0 \\
+  \therefore \lim_{i \to \infty} r_i &= 0 \implies \lim_{i \to \infty} [\bexpr \wedge \pred] \cdot r_i = 0
+\end{align*}
+
+\noindent\textbf{Conclusion:} Soundness follows from the main rule. \quad \checkmark
+\\
+\subsubsection{Direct Proof.}~\\
+
+\noindent\textbf{Definitions:} (Recall $I_n$ from \Cref{lem:In-recursion})
+\begin{align*}
+  \beta &\defsym 1 - \epsilon / M \\
+  r_i &\defsym \beta^i \cdot V
+\end{align*}
+
+\noindent\textbf{Range of $\beta$:}
+\begin{align*}
+  0 \leq \WP{\cmd}{[\pred] \cdot V} \leq V - \epsilon \leq M - \epsilon
+    &\implies \epsilon \leq M \\
+  0 < \epsilon \leq M
+    &\implies \beta \in [0, 1)
+\end{align*}
+
+\noindent\textbf{Auxiliary inequality on $\bexpr \wedge \pred$:}
+\begin{align*}
+  V \leq M
+    &\implies V \cdot \epsilon / M \leq \epsilon
+    \implies V - \epsilon \leq \beta \cdot V \\
+  \WP{\cmd}{[\pred] \cdot V} \leq V - \epsilon
+    &\implies \WP{\cmd}{[\pred] \cdot V} \leq \beta \cdot V \quad \text{(by premise 3)} \\
+  \beta^n \cdot \WP{\cmd}{[\pred] \cdot V}
+    &\leq \beta^{n+1} \cdot V \\
+  \WP{\cmd}{[\pred] \cdot r_n}
+    &\leq r_{n+1} \quad \text{(by linearity)} \\
+  \implies [\bexpr \wedge \pred] \cdot r_{n+1}
+    &\geq \WP{\cmd}{[\pred] \cdot r_n}
+\end{align*}
+
+\noindent\textbf{Key inequality:} $\forall n.\ [\pred] \cdot I_n + [\pred] \cdot r_n \geq [\pred] \cdot \ex$ (by induction)
+
+\noindent\textit{Base case $n = 0$:}
+\begin{align*}
+  [\pred] \cdot I_0 + [\pred] \cdot r_0
+    &= [\neg\bexpr \wedge \pred] \cdot \ex + [\pred] \cdot V \\
+    &\geq [\neg\bexpr \wedge \pred] \cdot \ex + [\bexpr \wedge \pred] \cdot V \\
+    &\geq [\neg\bexpr \wedge \pred] \cdot \ex + [\bexpr \wedge \pred] \cdot \ex \quad \text{(by premise 2)} \\
+    &= [\pred] \cdot \ex
+\end{align*}
+
+\noindent\textit{Inductive step $n \to n+1$ (using \Cref{lem:In-recursion} for $I_{n+1}$):}
+\begin{align*}
+  [\pred] \cdot I_{n+1} + [\pred] \cdot r_{n+1}
+    &= [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot I_n} + [\neg\bexpr \wedge \pred] \cdot \ex + [\pred] \cdot r_{n+1} \\
+    &\geq [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot I_n} + [\neg\bexpr \wedge \pred] \cdot \ex + [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot r_n} \\
+    &= [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot I_n + [\pred] \cdot r_n} + [\neg\bexpr \wedge \pred] \cdot \ex \quad \text{(by linearity)} \\
+    &\geq [\bexpr \wedge \pred] \cdot \WP{\cmd}{[\pred] \cdot \ex} + [\neg\bexpr \wedge \pred] \cdot \ex \quad \text{(by IH + monotonicity)} \\
+    &\geq [\bexpr \wedge \pred] \cdot \ex + [\neg\bexpr \wedge \pred] \cdot \ex \quad \text{(by premise 1)} \\
+    &= [\pred] \cdot \ex
+\end{align*}
+
+\noindent\textbf{Limit argument:}
+\begin{align*}
+  \beta \in [0,1),\ V \leq M
+    &\implies \lim_{n \to \infty} r_n = 0 \\
+  \lim_{n \to \infty} I_n
+    &= \WP{\WHILE\bexpr\DO\cmd}{[\neg\bexpr \wedge \pred] \cdot \ex} \quad \text{(by Scott-continuity)} \\
+  \implies [\pred] \cdot \ex &\leq \WP{\WHILE\bexpr\DO\cmd}{[\neg\bexpr \wedge \pred] \cdot \ex} \quad \checkmark
+\end{align*}
